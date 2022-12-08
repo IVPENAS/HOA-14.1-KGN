@@ -1,0 +1,56 @@
+#Installation of OS_Keystone
+---
+
+  - name: Installing Keystone
+    tags: keystone, ubuntu
+    apt:
+      name: keystone
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Configuring the configuration file for Keystone database
+    tags: keystone, edit, ubuntu
+    lineinfile:
+      path: /etc/keystone/keystone.conf
+      regexp: "connection = sqlite:////var/lib/keystone/keystone.db"
+      line: "connection = mysql+pymysql://keystone:kimchi31@controller/keystone"
+      state: present
+
+  - name: Configuring the configuration file for Keystone token
+    tags: keystone, edit, ubuntu
+    lineinfile:
+      path: /etc/keystone/keystone.conf
+      line: "provider = fernet"
+      state: present
+
+#  - name: populate the identity service database
+#    shell: '/bin/sh -c "keystone-manage db_sync" keystone'
+
+  - name: Initializing Fernet Key repositories
+    shell: 'keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone'
+
+  - name: Initializing the Credential setup
+    shell: 'keystone-manage credential_setup --keystone-user keystone --keystone-group keystone'
+
+  - name: Configuring the apache http server
+    tags: add, keystone, ubuntu
+    lineinfile:
+      path: /etc/apache2/apache2.conf
+      line: "ServerName controller"
+      state: present
+
+  - name: Restarting the apache Service
+    tags: keystone, ubuntu, restart
+    service:
+      name: apache2
+      state: restarted
+
+  - name: Configuring the admin user-account via source
+    shell: |
+      export OS_USERNAME=admin
+      export OS_PASSWORD=0uma999
+      export OS_PROJECT_NAME=admin
+      export OS_USER_DOMAIN_NAME=Default
+      export OS_PROJECT_DOMAIN_NAME=Default
+      export OS_AUTH_URL=http://controller:5000/v3
+      export OS_IDENTITY_API_VERSION=3

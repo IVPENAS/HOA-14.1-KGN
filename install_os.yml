@@ -16,4 +16,4 @@
   roles:
     - Glance
     - Nova
-    - Keystone
+#    - Keystone

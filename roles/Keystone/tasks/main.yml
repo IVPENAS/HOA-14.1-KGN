@@ -23,8 +23,8 @@
       line: "provider = fernet"
       state: present
 
-#  - name: populate the identity service database
-#    shell: '/bin/sh -c "keystone-manage db_sync" keystone'
+  - name: populate the identity service database
+    shell: '/bin/sh -c "keystone-manage db_sync" keystone'
 
   - name: Initializing Fernet Key repositories
     shell: 'keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone'

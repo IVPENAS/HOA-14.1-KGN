@@ -1,0 +1,53 @@
+#Installing OS_Glance
+---
+
+  - name: Creating a new admin-openrc.sh file
+    tags: glance, ubuntu, file
+    copy:
+      src: admin-openrc.sh
+      dest: /home/penas
+      owner: root
+      group: root
+      mode: 0744
+
+  - name: Installing Glance
+    apt:
+      name: glance
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Configuring the conf file of Glance
+    tags: glance, ubuntu
+    lineinfile:
+      path: /etc/glance/glance-api.conf
+      regexp: "connection = sqli:////var/lib/glance/glance.sqlite"
+      line: "connection = mysql+pymysql+://glance:0uma999@controller/glance"
+      state: present
+
+  - name: Configuring the conf file of authtoken
+    tags: glance, ubuntu
+    lineinfile:
+      path: /etc/glance/glance-api.conf
+      regexp: "www_authenticate_uri = <None>"
+      line: "www_authenticate_uri = http://controller:5000"
+      state: present
+
+  - name: Configuring the conf file of authtoken pt. 2
+    tags: glance, ubuntu
+    lineinfile:
+      path: /etc/glance/glance-api.conf
+      regexp: "memcached_servers = <None>"
+      line: "memcached_servers = controller:11211"
+      state: present
+
+  - name: Configuring the conf file of authtoken pt. 3
+    tags: glance, ubuntu
+    lineinfile:
+      path: /etc/glance/glance-api.conf
+      regexp: "auth_type = <None>"
+      line: "auth_type = password"
+
+  - name: Restarting the Glance service
+    service:
+      name: glance-api
+      state: restarted

@@ -269,10 +269,11 @@
     lineinfile:
       path: /etc/nova/nova.conf
       regexp: "password = <None>"
-      line: "password = kimchi31"
+      line: "password = 0uma999"
       state: present
 
   - name: Restarting the Nova service
     service:
       name: nova-compute
       state: restarted
+
